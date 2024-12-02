@@ -1,0 +1,40 @@
+name: Test Code Before Merging
+
+on:
+  pull_request:
+    branches:
+      - main # Run workflow for pull requests targeting the main branch
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' 
+
+      # Step 3: Install dependencies (http-server and Cypress)
+      - name: Install dependencies
+        run: npm install --save-dev http-server cypress
+
+      # Step 4: Start http-server to serve docs folder
+      - name: Start http-server
+        run: npx http-server ./docs -p 8080 &
+        env:
+          NODE_ENV: test
+
+      # Step 5: Wait for the server to be ready
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:8080
+
+      # Step 6: Run tests
+      - name: Run tests
+        run: npx cypress run
