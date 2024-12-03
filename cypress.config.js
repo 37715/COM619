@@ -8,6 +8,6 @@ module.exports = defineConfig({
       // return config variable
       return config;   
     },
-    baseUrl: 'http://localhost:8080', 
+    baseUrl: 'http://localhost:3000', 
   },
 });
