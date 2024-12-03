@@ -3,56 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>recipies!</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Recipes!</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-
   <!-- Header Section -->
   <header>
-    <div class="title">recipies!</div>
-    <div class="login-form">
-      <input type="text" placeholder="Username">
-      <input type="password" placeholder="Password">
-      <button>sign up</button>
-      <button>log in</button>
+    <div class="title">Recipes!</div>
+    <div class="login-form" id="login-form">
+      <input type="text" placeholder="Username" id="login-username">
+      <input type="password" placeholder="Password" id="login-password">
+      <button id="signup-btn">Sign Up</button>
+      <button id="login-btn">Log In</button>
     </div>
-    <!-- Navigation Button -->
+    <div class="logout-form" id="logout-form" style="display: none;">
+      <span id="welcome-message"></span>
+    </div>
     <div class="nav-button">
-      <button onclick="window.location.href='userpage/userpage.html'">Go to User Page</button>
+      <button onclick="window.location.href='/userpage'">Go to User Page</button>
     </div>
   </header>
+
+  <!-- Logout Button Section -->
+  <div id="logout-container" style="position: fixed; top: 10px; right: 10px; display: none;">
+    <button id="logout-btn">Log Out</button>
+  </div>
 
   <!-- Main Content Section -->
   <main>
     <div class="recipe-list">
       <h3>Recipe List:</h3>
       <ul>
-        <li>mango curry</li>
-        <li>mango salad</li>
-        <li>mango pudding</li>
-        <li>mango cake</li>
-        <li>mango soup</li>
-        <li>mango broth</li>
-        <li>mango pancakes</li>
+        <li>Mango Curry</li>
+        <li>Mango Salad</li>
+        <li>Mango Pudding</li>
       </ul>
     </div>
-
     <div class="food-image">
-        <img src="images/mangocurry.jpg" alt="mango curry" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+      <img src="/images/mangocurry.jpg" alt="Mango Curry" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
     </div>
-
     <div class="food-story">
       <h4>Food Story:</h4>
       <p>Creator:</p>
-      <p>this mango curry was passed down from my great grandma.</p>
+      <p>This mango curry was passed down from my great grandma.</p>
     </div>
-
     <div class="recipe-content">
       <h4>Recipe Instructions and Ingredients</h4>
       <p>Recipe instructions and ingredients go in this box.</p>
     </div>
   </main>
 
+  <script>
+    async function login() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('logout-container').style.display = 'block';
+        document.getElementById('welcome-message').innerText = `Welcome, ${data.user.username}`;
+      } else {
+        alert(data.error);
+      }
+    }
+
+    async function logout() {
+      const response = await fetch('/logout', { method: 'POST' });
+      if (response.ok) {
+        alert('Logged out successfully.');
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('logout-container').style.display = 'none';
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', login);
+    document.getElementById('logout-btn').addEventListener('click', logout);
+  </script>
 </body>
 </html>
+
+
+
