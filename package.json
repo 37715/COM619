@@ -13,9 +13,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@cypress/code-coverage": "^3.13.8",
+    "babel-loader": "^9.2.1",
     "babel-plugin-istanbul": "^7.0.0",
-    "cypress": "^13.16.0"
+    "cypress": "^13.16.0",
+    "istanbul-lib-coverage": "^3.2.2",
+    "nyc": "^17.1.0"
   },
   "dependencies": {
     "http-server": "^14.1.1"
