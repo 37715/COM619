@@ -20,7 +20,8 @@
     "babel-plugin-istanbul": "^7.0.0",
     "cypress": "^13.16.0",
     "istanbul-lib-coverage": "^3.2.2",
-    "nyc": "^17.1.0"
+    "nyc": "^17.1.0",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "http-server": "^14.1.1"
