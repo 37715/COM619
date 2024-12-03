@@ -2,3 +2,4 @@ node_modules
 exampleTests
 devops-ae1.docx
 concepts
+.github/workflows/ci.yml
