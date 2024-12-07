@@ -4,22 +4,25 @@ import RecipeCardComponent from './components/RecipeCardComponent';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
+
 const HomePage = () => {
   const [recipes, setRecipes] = useState([
     {
-      name: "Mango Curry",
-      author: "john doe",
-      story: "this mango curry was passed down from my great grandma.",
-      ingredients: ["curry mix", "mangos", "rice"],
-      instructions: "mix curry mix in water stir in mangos, prepare rice with boiling water…",
+      name: "Loading...",
+      author: "Loading...",
+      story: "Loading...",
+      ingredients: ["Loading..."],
+      instructions: "Loading...",
       likes: 0,
       profilePic: null,
       comments: [],
-      __v: 0,
       public: true,
     },
   ]);
   const [selectedRecipe, setSelectedRecipe] = useState(recipes[0]);
+
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccess] = useState(null);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -36,6 +39,58 @@ const HomePage = () => {
 
     fetchRecipes();
   }, []);
+
+  const onLike = async (name) =>{
+    try {
+      const response = await fetch(`/api/recipes/${name}/likes`, {
+        method: 'PATCH',
+      });
+      const data = await response.json();
+      switch (response.status) {
+        case 200:
+          console.log('Likes updated successfully');
+          setError(null);
+
+          setSuccess(data.message);
+
+          setRecipes((prevRecipes) =>
+            prevRecipes.map((recipe) =>
+              recipe.name === name ? { ...recipe, likes: data.data.recipe.likes } : recipe
+            )
+          );
+
+          setSelectedRecipe((prevRecipe) => ({ ...prevRecipe, likes: data.data.recipe.likes }));
+          break;
+        case 401:
+          console.log('Unauthorized');
+
+          setSuccess(null);
+
+          setError(data.error);
+          break;
+        case 404:
+          console.log('Recipe not found');
+
+          setSuccess(null);
+
+          setError(data.error)
+          break;
+        default:
+          console.log('Error updating likes');
+
+          setSuccess(null);
+
+          setError(data.error);
+          break;
+      }
+    } catch (error) {
+      console.error('Error updating likes:', error);
+
+      setSuccess(null);
+      
+      setError('Error updating likes');
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -72,7 +127,7 @@ const HomePage = () => {
           </ul>
         </div>
         <div className="w-2/3 pl-4 pr-4">
-          <RecipeCardComponent recipe={selectedRecipe} />
+          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} errorMSG={error} successMessage={successMessage}  />
         </div>
       </main>
     </div>

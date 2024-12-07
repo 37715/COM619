@@ -1,6 +1,6 @@
 'use client';
 
-const RecipeCardComponent = ({ recipe }) => {
+const RecipeCardComponent = ({ recipe, onLike, errorMSG, successMessage  }) => {
     if (!recipe) {
         return <div>Loading...</div>;
       }
@@ -24,6 +24,9 @@ const RecipeCardComponent = ({ recipe }) => {
         <p className="text-black">{recipe.instructions}</p>
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black my-3">Likes:</h4>
         <p className="text-black">{recipe.likes}</p>
+        <input type="button" value="Like" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2" onClick={()=> onLike(recipe.name)} />
+        <p className="text-red-500">{errorMSG}</p>
+        <p className="text-green-500">{successMessage}</p>
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black my-3">Comments:</h4>
         <ul className="text-black">
           {recipe.comments.map((comment, index) => (

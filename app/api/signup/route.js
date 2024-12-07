@@ -12,9 +12,10 @@ export async function POST(req) {
     if (existingUser) {
       return NextResponse.json({ error: 'Username already Taken, please choose another.' }, { status: 400 });
     }
+    console.log(User.schema)
 
     // Create a new user
-    const newUser = new User({ username, password });
+    const newUser = new User({ username, password, isAdmin: false, profilePicture: "" });
     await newUser.save();
 
     return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
@@ -23,5 +24,6 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Error creating user' }, { status: 500 });
   }
 }
+
 
 

@@ -47,6 +47,10 @@ const recipeSchema = new mongoose.Schema({
       },
     }
   ],
+  Category:{  
+    type: String,
+    required: true,
+  },
 });
 
 

@@ -10,14 +10,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    profilePicture: {
-        type: Buffer,
-        required: false,
-    },
     isAdmin:{
         type: Boolean,
         default: false,
     },
+    profilePicture: {
+        type: String,
+        required: false,
+        default: '', 
+    },
+
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
