@@ -3,6 +3,9 @@ import LoginForm from './components/LoginForm';
 import RecipeCardComponent from './components/RecipeCardComponent';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+
+
 
 
 const HomePage = () => {
@@ -19,10 +22,13 @@ const HomePage = () => {
       public: true,
     },
   ]);
+  const { data: session, status } = useSession();
   const [selectedRecipe, setSelectedRecipe] = useState(recipes[0]);
-
   const [error, setError] = useState(null);
   const [successMessage, setSuccess] = useState(null);
+  const [currentComment, setComment] = useState("");
+  const [commentError, setCommentError] = useState(null);
+  const [commentSuccess, setCommentSuccess] = useState(null);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -48,7 +54,16 @@ const HomePage = () => {
       const data = await response.json();
       switch (response.status) {
         case 200:
+
           console.log('Likes updated successfully');
+
+          // const userLikesResponse = await fetch(`/api/userRecipes`,{
+          //   method: 'POST',
+          //   body: JSON.stringify({
+          //     recipeName: name,
+          //   }),
+          // });
+
           setError(null);
 
           setSuccess(data.message);
@@ -92,6 +107,68 @@ const HomePage = () => {
     }
   }
 
+  const addComment = async (name, comment) => {
+    try {
+      const response = await fetch(`/api/comment/${name}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          comment: comment,
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      switch (response.status) {
+        case 200:
+          console.log('Comment added successfully');
+
+          setCommentError(null);
+
+          setCommentSuccess(data.message);
+
+          setComment('');
+
+          setRecipes((prevRecipes) =>
+            prevRecipes.map((recipe) =>
+              recipe.name === name
+                ? { ...recipe, comments: [...recipe.comments, ...data.recipe.comments] }
+                : recipe
+            )
+          );
+
+          setSelectedRecipe((prevRecipe) => ({
+            ...prevRecipe,
+            comments: [...prevRecipe.comments, ...data.recipe.comments],
+          }));
+          break;
+        case 401:
+          console.log('Unauthorized');
+
+          setCommentError(data.error);
+
+          setCommentSuccess(null);
+          break;
+        case 404:
+          console.log('Recipe not found');
+
+          setCommentError(data.error);
+
+          setCommentSuccess(null);
+          break;
+        default:
+          console.log('Error adding comment');
+
+          setCommentError(data.error);
+
+          setCommentSuccess(null);
+          break;
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+
+      setCommentError('Error adding comment');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex justify-between items-center p-12 bg-gray-100 border-b border-gray-300">
@@ -127,7 +204,7 @@ const HomePage = () => {
           </ul>
         </div>
         <div className="w-2/3 pl-4 pr-4">
-          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} errorMSG={error} successMessage={successMessage}  />
+          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} />
         </div>
       </main>
     </div>
