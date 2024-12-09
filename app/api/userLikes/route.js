@@ -16,7 +16,12 @@ export async function GET(req) {
 
     const likes = await UserLikes.find({ username: session.user.name });
 
-    return NextResponse.json({ likes }, { status: 200 });
+    if (!likes || likes.length === 0) {
+      return new NextResponse(null, { status: 204 });
+    } else {
+      return NextResponse.json({ likes, message: "You have already Liked this Recipe!" }, { status: 200 });
+    }
+    
   } catch (error) {
     console.error('Error fetching likes:', error);
     return NextResponse.json({ error: 'Error fetching likes' }, { status: 500 });

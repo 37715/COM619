@@ -46,66 +46,88 @@ const HomePage = () => {
     fetchRecipes();
   }, []);
 
-  const onLike = async (name) =>{
+  const onLike = async (name) => {
     try {
-      const response = await fetch(`/api/recipes/${name}/likes`, {
-        method: 'PATCH',
-      });
-      const data = await response.json();
-      switch (response.status) {
-        case 200:
-
+      // Check if the user has already liked the recipe
+      const alreadyLikedResponse = await fetch(`/api/userLikes`);
+  
+      if (alreadyLikedResponse.status === 401) {
+        const alreadyLikedData = await alreadyLikedResponse.json();
+        console.log('Unauthorized: Please log in');
+        setError(alreadyLikedData.error);
+        setSuccess(null);
+        return; // Exit early if unauthorized
+      }
+  
+      if (alreadyLikedResponse.status === 200) {
+        const alreadyLikedData = await alreadyLikedResponse.json();
+        console.log('User already liked this recipe');
+        setSuccess(alreadyLikedData.message);
+        console.log(successMessage);
+        setError(null);
+        return; // Exit early if the user already liked the recipe
+      }
+  
+      // Handle case when the recipe is not found (status 204)
+      if (alreadyLikedResponse.status === 204) {
+        console.log('Recipe not found, proceeding to update likes');
+  
+        // Update recipe likes count
+        const response = await fetch(`/api/recipes/${name}/likes`, { method: 'PATCH' });
+        const data = await response.json();
+  
+        if (response.status === 200) {
           console.log('Likes updated successfully');
-
-          // const userLikesResponse = await fetch(`/api/userRecipes`,{
-          //   method: 'POST',
-          //   body: JSON.stringify({
-          //     recipeName: name,
-          //   }),
-          // });
-
-          setError(null);
-
-          setSuccess(data.message);
-
+  
+          // Save user like to the database
+          const userLikesResponse = await fetch(`/api/userLikes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipeName: name }),
+          });
+          const userLikesData = await userLikesResponse.json();
+  
+          if (userLikesResponse.status === 201) {
+            console.log('Recipe liked successfully');
+            setSuccess(userLikesData.message);
+            setError(null);
+          } else {
+            console.log('Error liking recipe');
+            setSuccess(null);
+            setError(userLikesData.error);
+          }
+  
+          // Update the state of recipes and selected recipe
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name ? { ...recipe, likes: data.data.recipe.likes } : recipe
             )
           );
-
-          setSelectedRecipe((prevRecipe) => ({ ...prevRecipe, likes: data.data.recipe.likes }));
-          break;
-        case 401:
-          console.log('Unauthorized');
-
-          setSuccess(null);
-
-          setError(data.error);
-          break;
-        case 404:
-          console.log('Recipe not found');
-
-          setSuccess(null);
-
-          setError(data.error)
-          break;
-        default:
+          setSelectedRecipe((prevRecipe) => ({
+            ...prevRecipe,
+            likes: data.data.recipe.likes,
+          }));
+        } else {
           console.log('Error updating likes');
-
           setSuccess(null);
-
           setError(data.error);
-          break;
+        }
+      }
+  
+      // Handle internal server error
+      if (alreadyLikedResponse.status === 500) {
+        const alreadyLikedData = await alreadyLikedResponse.json();
+        console.log('Error fetching likes');
+        setError(alreadyLikedData.error);
       }
     } catch (error) {
-      console.error('Error updating likes:', error);
-
+      console.log('Error during like process:', error);
       setSuccess(null);
-      
-      setError('Error updating likes');
+      setError('Error processing like request');
     }
-  }
+  };
+  
+  
 
   const addComment = async (name, comment) => {
     try {
