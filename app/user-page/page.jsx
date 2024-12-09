@@ -81,6 +81,13 @@ const UserPage = () => {
       setStory('');
       setPublic(true);
       setRecipeSuccess(data.message);
+      
+      setUserRecipes((prevUserRecipes) => [
+        ...prevUserRecipes, 
+        { recipeName: recipeName }  
+      ]);
+
+
     } catch (err) {
       console.error('Error adding recipe:', err);
     }
@@ -96,6 +103,34 @@ const UserPage = () => {
     setRecipeError(null);
     setRecipeSuccess(null);
   };
+
+  const handleDeleteRecipe = async (recipeName) => {
+    if (!window.confirm(`Are you sure you want to delete the recipe: ${recipeName}?`)) {
+      return; 
+    }
+  
+    try {
+      const response = await fetch(`/api/recipes/${recipeName}/delete`, {
+        method: 'DELETE',
+      });
+  
+      const data = await response.json();
+  
+      if (response.status === 200) {
+        console.log('Recipe deleted successfully');
+        setUserRecipes((prevRecipes) =>
+          prevRecipes.filter((recipe) => recipe.recipeName !== recipeName)
+        );
+      } else {
+        console.error('Error deleting recipe:', data.error);
+        setUserRecipeError(data.error || 'Failed to delete recipe.');
+      }
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      setUserRecipeError('Error deleting recipe.');
+    }
+  };
+  
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -214,10 +249,13 @@ const UserPage = () => {
               <span className="font-bold text-black">My Recipes:</span>
               <ul className="likes-list text-black">
               {Array.isArray(userRecipes) && userRecipes.length === 0 ? (
-                <li className="text-black">No likes found</li>
+                <li className="text-black">No Recipes found</li>
               ) : (
                 Array.isArray(userRecipes) && userRecipes.map((recipe, index) => (
-                  <li className="text-black" key={index}>{recipe.recipeName}</li>
+                  <li className="text-black mb-4 flex items-center justify-between" key={index}>
+                    <span>{recipe.recipeName}</span>
+                    <input type="button" value="Delete" className="delete-btn bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded cursor-pointer" onClick={() => handleDeleteRecipe(recipe.recipeName)} />
+                  </li>
                 ))
               )}
               </ul>
@@ -227,7 +265,7 @@ const UserPage = () => {
               <span className="font-bold text-black">Likes:</span>
               <ul className="likes-list text-black">
               {Array.isArray(likes) && likes.length === 0 ? (
-                <li className="text-black">No likes found</li>
+                <li className="text-black">No Likes found</li>
               ) : (
                 Array.isArray(likes) && likes.map((like, index) => (
                   <li className="text-black" key={index}>{like.recipeName}</li>
