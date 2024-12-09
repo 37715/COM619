@@ -14,8 +14,8 @@ export async function POST(req){
         }
         
         await connectDB();
-        const {name, author, story, ingredients, instructions, profilePic, Public, comments} = await req.json();
-        const newRecipe = new Recipe({name, author, story, ingredients, instructions, profilePic, Public, comments});
+        const {name, author, story, ingredients, instructions, profilePic, Public, comments, Category} = await req.json();
+        const newRecipe = new Recipe({name, author, story, ingredients, instructions, profilePic, Public, comments, Category});
         await newRecipe.save();
         return NextResponse.json({message: 'Recipe created successfully'}, {status: 201});
     } catch (error) {

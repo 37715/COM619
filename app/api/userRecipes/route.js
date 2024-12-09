@@ -13,10 +13,10 @@ export async function GET(req) {
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized: Please log in and try again' }, { status: 401 });
     }
-
+    console.log(session.user.name);
     const recipes = await UserRecipes.find({ username: session.user.name });
 
-    return NextResponse.json({ recipes }, { status: 200 });
+    return NextResponse.json({ recipes, username: session.user.name }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user recipes:', error);
     return NextResponse.json({ error: 'Error fetching user recipes' }, { status: 500 });

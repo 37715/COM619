@@ -48,15 +48,16 @@ const HomePage = () => {
 
   const onLike = async (name) => {
     try {
-      // Check if the user has already liked the recipe
-      const alreadyLikedResponse = await fetch(`/api/userLikes`);
+      
+      const alreadyLikedResponse = await fetch(`/api/userLikes/${name}`);
+
   
       if (alreadyLikedResponse.status === 401) {
         const alreadyLikedData = await alreadyLikedResponse.json();
         console.log('Unauthorized: Please log in');
         setError(alreadyLikedData.error);
         setSuccess(null);
-        return; // Exit early if unauthorized
+        return; 
       }
   
       if (alreadyLikedResponse.status === 200) {
@@ -65,21 +66,20 @@ const HomePage = () => {
         setSuccess(alreadyLikedData.message);
         console.log(successMessage);
         setError(null);
-        return; // Exit early if the user already liked the recipe
+        return; 
       }
   
-      // Handle case when the recipe is not found (status 204)
+      
       if (alreadyLikedResponse.status === 204) {
         console.log('Recipe not found, proceeding to update likes');
   
-        // Update recipe likes count
+        
         const response = await fetch(`/api/recipes/${name}/likes`, { method: 'PATCH' });
         const data = await response.json();
   
         if (response.status === 200) {
           console.log('Likes updated successfully');
   
-          // Save user like to the database
           const userLikesResponse = await fetch(`/api/userLikes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -97,7 +97,7 @@ const HomePage = () => {
             setError(userLikesData.error);
           }
   
-          // Update the state of recipes and selected recipe
+          
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name ? { ...recipe, likes: data.data.recipe.likes } : recipe
@@ -114,7 +114,7 @@ const HomePage = () => {
         }
       }
   
-      // Handle internal server error
+      
       if (alreadyLikedResponse.status === 500) {
         const alreadyLikedData = await alreadyLikedResponse.json();
         console.log('Error fetching likes');
@@ -217,7 +217,12 @@ const HomePage = () => {
                 <li
                   key={index}
                   className="cursor-pointer text-black"
-                  onClick={() => setSelectedRecipe(recipe)}
+                  onClick={() =>{
+                    setError(null);
+                    setSuccess(null);
+                    setCommentError(null);
+                    setCommentSuccess(null);
+                    setSelectedRecipe(recipe)}}
                 >
                   {recipe.name}
                 </li>
