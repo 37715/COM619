@@ -24,11 +24,16 @@ const HomePage = () => {
   ]);
   const { data: session, status } = useSession();
   const [selectedRecipe, setSelectedRecipe] = useState(recipes[0]);
+  const [userRecipes, setUserRecipes] = useState([
+  ]);
   const [error, setError] = useState(null);
   const [successMessage, setSuccess] = useState(null);
   const [currentComment, setComment] = useState("");
   const [commentError, setCommentError] = useState(null);
   const [commentSuccess, setCommentSuccess] = useState(null);
+
+  const [updateCount, setUpdateCount] = useState(0);
+
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -43,8 +48,24 @@ const HomePage = () => {
       }
     };
 
+    const fetchUserRecipes = async () => {
+      try {
+        const response = await fetch('/api/myRecipes');
+        const data = await response.json();
+        console.log(data);
+        setUserRecipes(data.recipes);
+        console.log(data.recipes);
+        
+      } catch (error) {
+        console.log('Error fetching user recipes:', error);
+      }
+    };
+
     fetchRecipes();
-  }, []);
+    if (session) {
+      fetchUserRecipes();
+    }
+  }, [session, updateCount]);
 
   const onLike = async (name) => {
     try {
@@ -96,8 +117,6 @@ const HomePage = () => {
             setSuccess(null);
             setError(userLikesData.error);
           }
-  
-          
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name ? { ...recipe, likes: data.data.recipe.likes } : recipe
@@ -107,6 +126,7 @@ const HomePage = () => {
             ...prevRecipe,
             likes: data.data.recipe.likes,
           }));
+          setUpdateCount(updateCount + 1);
         } else {
           console.log('Error updating likes');
           setSuccess(null);
@@ -161,6 +181,7 @@ const HomePage = () => {
             ...prevRecipe,
             comments: [...prevRecipe.comments, ...data.recipe.comments],
           }));
+          setUpdateCount(updateCount + 1);
           break;
         case 401:
           console.log('Unauthorized');
@@ -225,6 +246,28 @@ const HomePage = () => {
                     setSelectedRecipe(recipe)}}
                 >
                   {recipe.name}
+                </li>
+              ))
+            )}
+          </ul>
+          <h3 className="border-b-2 border-gray-500 pb-2 mb-4 mt-4 text-black"> User Recipe List:</h3>
+          <ul className="text-xl">
+            {userRecipes && userRecipes?.length === 0 ? (
+              <li className="text-black">No recipes found</li>
+            ) : (
+              (userRecipes || []).map((recipe, index) => (
+                <li
+                  key={index}
+                  className={`cursor-pointer text-black ${!recipe.Public ? 'font-semibold text-red-500' : ''}`}
+                  onClick={() =>{
+                    setError(null);
+                    setSuccess(null);
+                    setCommentError(null);
+                    setCommentSuccess(null);
+                    setSelectedRecipe(recipe)}}
+                >
+                  {recipe.name} 
+                  {!recipe.Public && <span className="ml-2 text-sm italic">(Private: Only you can see this)</span>}
                 </li>
               ))
             )}

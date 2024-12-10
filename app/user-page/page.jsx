@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import { get } from 'mongoose';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router'; 
 
 const UserPage = () => {
   // page setup state variables
-  const [session, setSession] = useState(null);
+  const { data: session } = useSession();  
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null); 
   const [likes, setLikes] = useState([]);
@@ -24,6 +26,13 @@ const UserPage = () => {
   const [Public, setPublic] = useState(true);
   const [recipeError, setRecipeError] = useState(null);
   const [recipeSuccess, setRecipeSuccess] = useState(null);
+
+  const [isEditing, setIsEditing] = useState(false); 
+  const [newUsername, setNewUsername] = useState(''); 
+  const [usernameSuccess, setUsernameSuccess] = useState(null);
+  const [usernameError, setUsernameError] = useState(null);
+ 
+
 
   const handleLogout = async () => {
     await signOut({ redirect: false });  
@@ -130,61 +139,102 @@ const UserPage = () => {
       setUserRecipeError('Error deleting recipe.');
     }
   };
+
+  const changeUsername = async () => {
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          newUsername: newUsername,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setUsernameError(data.error || 'Failed to update username.');
+        setUsernameSuccess(null);
+        return;
+      }
+      alert('Username updated. Please log in with new username');
+      handleLogout();
+      setUsernameError(null);
+      setUsernameSuccess(data.message);
+      console.log('Username updated:', data);
+    } catch (err) {
+      console.error('Error updating username:', err);
+    }
+  };
   
+  const fetchSession = async () => {
+    try {
+      const response = await fetch('/api/session');
+      if (!response.ok) {
+        throw new Error('Failed to fetch session');
+      }
+      const fetchedSession = await response.json();
+      console.log('Fetched session:', fetchedSession);
+      if (fetchedSession.error) {
+        redirect('/'); 
+      } else {
+        
+      }
+    } catch (err) {
+      console.log('Error fetching session:', err);
+      setError('Failed to load session.');
+      redirect('/'); 
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getLikes = async () => {
+    try {
+      const response = await fetch('/api/userLikes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch likes');
+      }
+      const fetchedLikes = await response.json();
+      setLikes(fetchedLikes.likes);
+    } catch (err) {
+      console.log('Error fetching likes:', err);
+    }
+  };
+
+  const getUserRecipes = async () => {
+    try {
+      const response = await fetch('/api/userRecipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user recipes');
+      }
+      const fetchedUserRecipes = await response.json();
+      setUserRecipes(fetchedUserRecipes.recipes);
+    } catch (err) {
+      console.log('Error fetching user recipes:', err);
+      setUserRecipeError('Failed to load user recipes.');
+    }
+  };
+
 
   useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch('/api/session');
-        if (!response.ok) {
-          throw new Error('Failed to fetch session');
-        }
-        const fetchedSession = await response.json();
-        if (fetchedSession.error) {
-          redirect('/'); 
-        } else {
-          setSession(fetchedSession);
-        }
-      } catch (err) {
-        console.error('Error fetching session:', err);
-        setError('Failed to load session.');
-        redirect('/'); 
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const getLikes = async () => {
-      try {
-        const response = await fetch('/api/userLikes');
-        if (!response.ok) {
-          throw new Error('Failed to fetch likes');
-        }
-        const fetchedLikes = await response.json();
-        setLikes(fetchedLikes.likes);
-      } catch (err) {
-        console.log('Error fetching likes:', err);
-      }
-    };
-
-    const getUserRecipes = async () => {
-      try {
-        const response = await fetch('/api/userRecipes');
-        if (!response.ok) {
-          throw new Error('Failed to fetch user recipes');
-        }
-        const fetchedUserRecipes = await response.json();
-        setUserRecipes(fetchedUserRecipes.recipes);
-      } catch (err) {
-        console.log('Error fetching user recipes:', err);
-        setUserRecipeError('Failed to load user recipes.');
-      }
-    };
-
     fetchSession();
     getLikes();
     getUserRecipes();
   }, []);
+
+  useEffect(() => {
+    fetchSession();
+  }, []); 
+
+  useEffect(() => {
+    if (session) {
+      getLikes();
+      getUserRecipes();
+    }
+
+    setLoading(false); 
+
+  }, [session]);  
 
   if (loading) {
     return <div>Loading...</div>; 
@@ -231,7 +281,7 @@ const UserPage = () => {
           <div className="profile-section mt-4">
             <div className="profile-pic bg-gray-400 h-20 w-20 rounded-full mx-auto"></div>
             <div className="username-section flex items-center justify-between mt-4">
-              <div className="username text-lg font-semibold text-black">{session.user.name}</div>
+              <div className="username text-lg font-semibold text-black mr-2">{session.user.name}</div>
               <input
                 type="button"
                 value="Change(Note: This feature is not implemented)"
@@ -240,9 +290,29 @@ const UserPage = () => {
             </div>
             <input
               type="button"
-              value="Edit Profile"
+              value="Edit Username (Will be logged out and Redirected)"
               className="edit-btn mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full cursor-pointer"
+              onClick={() => setIsEditing(!isEditing)}
             />
+            {isEditing && (
+              <div className="edit-username-box mt-4">
+                <input
+                  type="text"
+                  className="input-box w-full p-2 border border-gray-300 rounded text-black"
+                  placeholder="New Username"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                />
+                <input
+                  type="button"
+                  value="Save"
+                  className="save-btn bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded cursor-pointer mt-2"
+                  onClick={changeUsername}
+                />
+              </div>
+            )}
+            <p className="text-green-500">{usernameSuccess}</p>
+            <p className="text-red-500">{usernameError}</p>
           </div>
           <div className="info-section mt-6">
             <div className="likes-box mb-2">
