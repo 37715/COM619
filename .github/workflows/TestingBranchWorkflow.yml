@@ -1,0 +1,44 @@
+name: Run Tests on Testing-Setup Branch
+
+on:
+  push:
+    branches:
+      - Testing-Setup 
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # Step 3: Install root dependencies (
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the Next.js application
+      - name: Build Next.js application
+        run: npm run build
+
+      # Step 5: Start the Next.js application
+      - name: Start Next.js application
+        run: npm start &
+        env:
+          NODE_ENV: test
+
+      
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:3000
+
+      # Step 7: Run Cypress tests
+      - name: Run Cypress tests
+        run: npx cypress run
