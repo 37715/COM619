@@ -146,6 +146,36 @@ const HomePage = () => {
       setError('Error processing like request');
     }
   };
+
+  const onUnlike = async (name) => {
+    try {
+      const response = await fetch(`/api/recipes/unlike`, { method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipeName: name })
+      });
+      const data = await response.json();
+      if (response.status === 200) {
+        setSuccess('Recipe unliked successfully');
+        setError(null);
+        setRecipes((prevRecipes) =>
+          prevRecipes.map((recipe) =>
+            recipe.name === name ? { ...recipe, likes: data.recipe.likes } : recipe
+          )
+        );
+        setSelectedRecipe((prevRecipe) => ({
+          ...prevRecipe,
+          likes: data.recipe.likes,
+        }));
+      } else {
+        setError(data.error);
+        setSuccess(null);
+      }
+    } catch (error) {
+      console.log('Error unliking recipe:', error);
+      setError('Error unliking recipe');
+      setSuccess(null);
+    }
+  };
   
   
 
@@ -274,7 +304,7 @@ const HomePage = () => {
           </ul>
         </div>
         <div className="w-2/3 pl-4 pr-4">
-          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} />
+          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} onUnlike={onUnlike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} />
         </div>
       </main>
     </div>

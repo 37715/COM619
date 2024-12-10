@@ -81,6 +81,7 @@ export async function PATCH(req) {
         
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
         token.name = newUsername;
+        await setLoginSession(req, token);
         
 
         return NextResponse.json(

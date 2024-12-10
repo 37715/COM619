@@ -1,7 +1,35 @@
 'use client';
+import { useEffect, useState } from 'react';
 
-const RecipeCardComponent = ({ recipe, onLike, errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment  }) => {
-    if (!recipe) {
+const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment  }) => {
+  const [hasLiked, setHasLiked] = useState(false);
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      try {
+        const response = await fetch(`/api/userLikes/${recipe.name}`);
+        if (response.status === 200) {
+          setHasLiked(true);
+        } else {
+          setHasLiked(false);
+        }
+      } catch (error) {
+        console.error('Error checking like status:', error);
+      }
+    };
+
+    checkIfLiked();
+  }, [recipe.name]);
+
+  const handleLikeToggle = async () => {
+    if (hasLiked) {
+      await onUnlike(recipe.name);
+      setHasLiked(false);
+    } else {
+      await onLike(recipe.name);
+      setHasLiked(true);
+    }
+  };  
+  if (!recipe) {
         return <div>Loading...</div>;
       }
   return (
@@ -24,7 +52,9 @@ const RecipeCardComponent = ({ recipe, onLike, errorMSG, successMessage, current
         <p className="text-black">{recipe.instructions}</p>
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black my-3">Likes:</h4>
         <p className="text-black">{recipe.likes}</p>
-        <input type="button" value="Like" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2" onClick={()=> onLike(recipe.name)} />
+        <input type="button"
+          value={hasLiked ? "Unlike": "Like"} className={`p-2 px-4 text-xl cursor-pointer ${hasLiked ? "bg-red-500": "bg-blue-500" } bg-blue-500 text-white rounded-md mt-2`}
+          onClick={handleLikeToggle} />
         <p className="text-red-500">{errorMSG}</p>
         <p className="text-green-500">{successMessage}</p>
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black my-3">Comments:</h4>
