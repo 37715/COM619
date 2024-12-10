@@ -119,8 +119,8 @@ const LoginForm = () => {
               id="login-password"
               className="p-2 text-xl text-black"
             />
-            <input type="button" value="Sign Up" onClick={handleSignUp} className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md" />
-            <input type="button" value="Sign in" onClick={handleLogIn} className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md" />
+            <input type="button" id="Formbutton_LogIn" value="Sign Up" onClick={handleSignUp} className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md" />
+            <input type="button" id="Formbutton_SignIn" value="Sign in" onClick={handleLogIn} className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md" />
           </div>
           {errorMessage && (
             <div className="text-red-500 text-sm mt-1">{errorMessage}</div>
