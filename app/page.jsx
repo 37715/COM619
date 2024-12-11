@@ -10,17 +10,6 @@ import { useSession } from 'next-auth/react';
 
 const HomePage = () => {
   const [recipes, setRecipes] = useState([
-    {
-      name: "Loading...",
-      author: "Loading...",
-      story: "Loading...",
-      ingredients: ["Loading..."],
-      instructions: "Loading...",
-      likes: 0,
-      profilePic: null,
-      comments: [],
-      public: true,
-    },
   ]);
   const { data: session, status } = useSession();
   const [selectedRecipe, setSelectedRecipe] = useState(recipes[0]);

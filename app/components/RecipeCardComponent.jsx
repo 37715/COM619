@@ -1,26 +1,31 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment , editComment, editCommentError, editCommentSuccess , deleteComment, deleteCommentError, deleteCommentSuccess  }) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState(null); 
   const [newCommentValue, setNewCommentValue] = useState(''); 
+  
   useEffect(() => {
-    const checkIfLiked = async () => {
-      try {
-        const response = await fetch(`/api/userLikes/${recipe.name}`);
-        if (response.status === 200) {
-          setHasLiked(true);
-        } else {
-          setHasLiked(false);
+    if (recipe && recipe.name) { 
+      const checkIfLiked = async () => {
+        try {
+          const response = await fetch(`/api/userLikes/${recipe.name}`);
+          if (response.status === 200) {
+            setHasLiked(true);
+          } else {
+            setHasLiked(false);
+          }
+        } catch (error) {
+          console.error('Error checking like status:', error);
         }
-      } catch (error) {
-        console.error('Error checking like status:', error);
-      }
-    };
-
-    checkIfLiked();
-  }, [recipe.name]);
+      };
+  
+      checkIfLiked();
+    }
+  }, [recipe]);
+  
 
   const handleLikeToggle = async () => {
     if (hasLiked) {
@@ -42,6 +47,8 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
     }
   };
 
+  console.log(recipe)
+
   if (!recipe) {
         return <div>Loading...</div>;
       }
@@ -53,7 +60,13 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black">Food Story:</h4>
         <p>Creator: {recipe.author}</p>
         <p> Story: {recipe.story}</p>
-      </div>
+        </div>
+      {recipe.profilePic && recipe.profilePic.trim() !== '' && (
+        <div className='bg-gray-200 rounded-lg p-4 text-black mb-4'>
+          <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black"> Image </h4>
+          <Image src={recipe.profilePic} alt={`${recipe.name} image`} className="w-full h-auto rounded-lg mb-4" layout="responsive" width={500} height={300} />
+        </div>
+      )}
       <div className="bg-gray-200 p-6 rounded-lg text-black flex-grow">
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black">Ingredients:</h4>
         <ul className="text-black">
