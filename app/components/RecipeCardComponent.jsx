@@ -1,8 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment  }) => {
+const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment , editComment, editCommentError, editCommentSuccess  }) => {
   const [hasLiked, setHasLiked] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null); 
+  const [newCommentValue, setNewCommentValue] = useState(''); 
+  const [deleteCommentError, setDeleteCommentError] = useState('');
+  const [deleteCommentSuccess, setDeleteCommentSuccess] = useState('');
   useEffect(() => {
     const checkIfLiked = async () => {
       try {
@@ -28,7 +32,18 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
       await onLike(recipe.name);
       setHasLiked(true);
     }
-  };  
+  }; 
+
+  const toggleEditComment = (commentId, currentComment) => {
+    if(editingCommentId === commentId) {
+      setEditingCommentId(null);
+      setNewCommentValue("");
+    } else{
+      setEditingCommentId(commentId);
+      setNewCommentValue(currentComment);
+    }
+  };
+
   if (!recipe) {
         return <div>Loading...</div>;
       }
@@ -85,6 +100,27 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
             <p className="text-gray-500 text-sm">
               {new Date(comment.date).toLocaleDateString()}
             </p>
+            <input type="button" value="Edit" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => toggleEditComment(comment._id, comment.comment)} />
+            <input type="button" value="Delete" className="p-2 px-4 text-xl cursor-pointer bg-red-500 text-white rounded-md mt-2 mr-2 ml-2" />
+            {editingCommentId === comment._id && (
+              <div className="flex items-center space-x-4">
+                <input 
+                  type="text" 
+                  placeholder="Edit comment" 
+                  className="p-2 px-4 text-xl bg-gray-100 text-black rounded-md mt-2" 
+                  value={newCommentValue}
+                  onChange={(e) => setNewCommentValue(e.target.value)}
+                />
+                <input 
+                  type="button" 
+                  value="Save" 
+                  className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2" 
+                  onClick={()=> editComment(recipe.name, comment.comment, newCommentValue)}
+                />
+                <p className="text-red-500">{editCommentError}</p>
+                <p className="text-green-500">{editCommentSuccess}</p>
+              </div>
+            )}
             </div>
           ))}
         </div>
@@ -95,3 +131,5 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
 };
 
 export default RecipeCardComponent;
+
+

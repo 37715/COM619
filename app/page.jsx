@@ -34,6 +34,9 @@ const HomePage = () => {
 
   const [updateCount, setUpdateCount] = useState(0);
 
+  const [editCommentError, setEditCommentError] = useState('');
+  const [editCommentSuccess, setEditCommentSuccess] = useState('');
+
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -192,13 +195,9 @@ const HomePage = () => {
       switch (response.status) {
         case 200:
           console.log('Comment added successfully');
-
           setCommentError(null);
-
           setCommentSuccess(data.message);
-
           setComment('');
-
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name
@@ -206,7 +205,6 @@ const HomePage = () => {
                 : recipe
             )
           );
-
           setSelectedRecipe((prevRecipe) => ({
             ...prevRecipe,
             comments: [...prevRecipe.comments, ...data.recipe.comments],
@@ -215,30 +213,85 @@ const HomePage = () => {
           break;
         case 401:
           console.log('Unauthorized');
-
           setCommentError(data.error);
-
           setCommentSuccess(null);
           break;
         case 404:
           console.log('Recipe not found');
-
           setCommentError(data.error);
-
           setCommentSuccess(null);
           break;
         default:
           console.log('Error adding comment');
-
           setCommentError(data.error);
-
           setCommentSuccess(null);
           break;
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-
       setCommentError('Error adding comment');
+    }
+  };
+
+  const editComment = async (recipeName, oldComment, newComment) => {
+    try {
+      const response = await fetch(`/api/comment/${recipeName}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ oldComment : oldComment, newComment : newComment }),
+      });
+      const data = await response.json();
+      if (response.status === 200) {
+        console.log(data);
+        setEditCommentSuccess(data.message);
+        setEditCommentError('');
+
+        
+        setRecipes((prevRecipes) =>
+          prevRecipes.map((recipe) =>
+            recipe.name === recipeName
+              ? {
+                  ...recipe,
+                  comments: recipe.comments.map((comment) =>
+                    comment.comment === oldComment
+                      ? { ...comment, comment: newComment } 
+                      : comment
+                  ),
+                }
+              : recipe
+          )
+        );
+
+      
+        setSelectedRecipe((prevRecipe) => ({
+          ...prevRecipe,
+          comments: prevRecipe.comments.map((comment) =>
+            comment.comment === oldComment
+              ? { ...comment, comment: newComment } 
+              : comment
+          ),
+        }));
+      } else if (response.status === 400) {
+        console.log('Error editing comment:', response);
+        setEditCommentError(data.error);
+        setEditCommentSuccess('');
+      } else if (response.status === 403) {
+        console.log('Error editing comment:', response);
+        setEditCommentError(data.error);
+        setEditCommentSuccess('');
+      }else if (response.status === 404) {
+        console.log('Error editing comment:', response);
+        setEditCommentError(data.error);
+        setEditCommentSuccess('');
+      } else {
+        console.log('Error editing comment:', response);
+        setEditCommentError(data.error);
+        setEditCommentSuccess('');
+      }
+    } catch (error) {
+      console.log('Error editing comment:', error);
     }
   };
 
@@ -304,7 +357,7 @@ const HomePage = () => {
           </ul>
         </div>
         <div className="w-2/3 pl-4 pr-4">
-          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} onUnlike={onUnlike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} />
+          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} onUnlike={onUnlike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} editComment={editComment} editCommentError={editCommentError} editCommentSuccess={editCommentSuccess} />
         </div>
       </main>
     </div>
