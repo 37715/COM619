@@ -1,12 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment , editComment, editCommentError, editCommentSuccess  }) => {
+const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessage, currentComment, setComment, commentError, commentSuccess, addComment , editComment, editCommentError, editCommentSuccess , deleteComment, deleteCommentError, deleteCommentSuccess  }) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState(null); 
   const [newCommentValue, setNewCommentValue] = useState(''); 
-  const [deleteCommentError, setDeleteCommentError] = useState('');
-  const [deleteCommentSuccess, setDeleteCommentSuccess] = useState('');
   useEffect(() => {
     const checkIfLiked = async () => {
       try {
@@ -101,7 +99,7 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
               {new Date(comment.date).toLocaleDateString()}
             </p>
             <input type="button" value="Edit" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => toggleEditComment(comment._id, comment.comment)} />
-            <input type="button" value="Delete" className="p-2 px-4 text-xl cursor-pointer bg-red-500 text-white rounded-md mt-2 mr-2 ml-2" />
+            <input type="button" value="Delete" className="p-2 px-4 text-xl cursor-pointer bg-red-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => deleteComment(recipe.name, comment.comment)} />
             {editingCommentId === comment._id && (
               <div className="flex items-center space-x-4">
                 <input 
@@ -119,11 +117,14 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
                 />
                 <p className="text-red-500">{editCommentError}</p>
                 <p className="text-green-500">{editCommentSuccess}</p>
+
               </div>
             )}
             </div>
           ))}
         </div>
+        <p className="text-red-500">{deleteCommentError}</p>
+        <p className="text-green-500">{deleteCommentSuccess}</p>
 
       </div>
     </div>

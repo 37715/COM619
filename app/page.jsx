@@ -37,6 +37,9 @@ const HomePage = () => {
   const [editCommentError, setEditCommentError] = useState('');
   const [editCommentSuccess, setEditCommentSuccess] = useState('');
 
+  const [deleteCommentError, setDeleteCommentError] = useState('');
+  const [deleteCommentSuccess, setDeleteCommentSuccess] = useState('');
+
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -185,7 +188,7 @@ const HomePage = () => {
   const addComment = async (name, comment) => {
     try {
       const response = await fetch(`/api/comment/${name}`, {
-        method: 'PATCH',
+        method: 'POST',
         body: JSON.stringify({
           comment: comment,
         }),
@@ -295,6 +298,76 @@ const HomePage = () => {
     }
   };
 
+  const deleteComment = async (recipeName, comment) => {
+    try {
+      const response = await fetch(`/api/comment/${recipeName}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment: comment }),
+      });
+      const data = await response.json();
+      if (response.status === 200) {
+        console.log(data);
+        setDeleteCommentSuccess(data.message);
+        setDeleteCommentError('');   
+        setRecipes((prevRecipes) =>
+          prevRecipes.map((recipe) =>
+            recipe.name === recipeName
+              ? {
+                  ...recipe,
+                  comments: recipe.comments.filter((comment) =>
+                    comment.comment !== comment
+                  ),
+                }
+              : recipe
+          )
+        );
+
+        setSelectedRecipe((prevRecipe) => ({
+          ...prevRecipe,
+          comments: prevRecipe.comments.filter((comment) =>
+            comment.comment !== comment
+          ),
+        }));
+        setTimeout(() => {
+          setDeleteCommentSuccess('');
+        }, 5000);
+      } else if (response.status === 400) {
+        console.log('Error deleting comment:', response);
+        setDeleteCommentError(data.error);
+        setDeleteCommentSuccess('');
+        setTimeout(() => {
+          setDeleteCommentError('');
+        }, 5000);
+      } else if (response.status === 403) {
+        console.log('Error deleting comment:', response);
+        setDeleteCommentError(data.error);
+        setDeleteCommentSuccess('');
+        setTimeout(() => {
+          setDeleteCommentError('');
+        }, 5000);
+      }else if (response.status === 404) {
+        console.log('Error deleting comment:', response);
+        setDeleteCommentError(data.error);
+        setEditCommentSuccess('');
+        setTimeout(() => {
+          setDeleteCommentError('');
+        }, 5000);
+      } else {
+        console.log('Error deleting comment:', response);
+        setDeleteCommentError(data.error);
+        setDeleteCommentSuccess('');
+        setTimeout(() => {
+          setDeleteCommentError('');
+        }, 5000);
+      }
+    } catch (error) {
+      console.log('Error deleting comment:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex justify-between items-center p-12 bg-gray-100 border-b border-gray-300">
@@ -357,7 +430,7 @@ const HomePage = () => {
           </ul>
         </div>
         <div className="w-2/3 pl-4 pr-4">
-          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} onUnlike={onUnlike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} editComment={editComment} editCommentError={editCommentError} editCommentSuccess={editCommentSuccess} />
+          <RecipeCardComponent recipe={selectedRecipe} onLike={onLike} onUnlike={onUnlike} errorMSG={error} successMessage={successMessage} currentComment={currentComment} setComment={setComment} commentError={commentError} commentSuccess={commentSuccess} addComment={addComment} editComment={editComment} editCommentError={editCommentError} editCommentSuccess={editCommentSuccess} deleteComment={deleteComment} deleteCommentError={deleteCommentError} deleteCommentSuccess={deleteCommentSuccess} />
         </div>
       </main>
     </div>

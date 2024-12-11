@@ -28,6 +28,39 @@ export async function GET(req, { params }) {
   }
 }
 
+export async function POST(req, { params }) {
+  try {
+    await connectDB();
+
+    const session = await getServerSession({ req, authOptions });
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Please log in and try again' }, { status: 401 });
+    }
+
+    const { name } = await params;
+    const { comment } = await req.json();
+
+    if (!name || !comment || comment === '' || name === '') {
+      return NextResponse.json({ error: 'Recipe name and comment are required' }, { status: 400 });
+    }
+
+    const recipe = await Recipe.findOneAndUpdate(
+      { name },
+      { $push: { comments: { userName: session.user.name, comment: comment.trim() } } },
+      { new: true }
+    );
+
+    if (!recipe) {
+      return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Comment added successfully', recipe }, { status: 200 });
+  } catch (error) {
+    console.log('Error adding comment:', error);
+    return NextResponse.json({ error: 'Error adding comment' }, { status: 500 });
+  }
+};
+
 
 export async function PATCH(req, { params }) {
   try {
