@@ -7,14 +7,14 @@ export async function POST(req) {
     await connectDB();
     const { username, password } = await req.json();
 
-    // Check if the user already exists
+    
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return NextResponse.json({ error: 'Username already Taken, please choose another.' }, { status: 400 });
     }
     console.log(User.schema)
 
-    // Create a new user
+    
     const newUser = new User({ username, password, isAdmin: false, profilePicture: "" });
     await newUser.save();
 

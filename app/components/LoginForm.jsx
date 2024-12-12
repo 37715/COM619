@@ -94,7 +94,7 @@ const LoginForm = () => {
       if (response.error) {
         setErrorMessage(response.error);
       }else{
-        setWelcomeMessage(`Welcome, ${username}!`);
+        setWelcomeMessage(`Welcome, ${username}. Please log in!`);
       }
     }catch(error){
       console.log('Error signing up:', error);
