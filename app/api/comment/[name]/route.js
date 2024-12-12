@@ -121,16 +121,24 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: 'Recipe name and comment name are required' }, { status: 400 });
     }
 
-    const recipe = await Recipe.findOneAndUpdate(
+    
+    const recipe = await Recipe.findOne({ name });
+    if (!recipe) {
+      return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
+    }
+
+    
+    const initialCommentCount = recipe.comments.length;
+    const updatedRecipe = await Recipe.findOneAndUpdate(
       { name },
       { $pull: { comments: { userName: session.user.name, comment: comment } } },
       { new: true }
     );
 
-    console.log(recipe);
+    const finalCommentCount = updatedRecipe ? updatedRecipe.comments.length : initialCommentCount;
 
-    if (!recipe) {
-      return NextResponse.json({ error: 'You cant Delete this comment as you do not own it.' }, { status: 404 });
+    if (initialCommentCount === finalCommentCount) {
+      return NextResponse.json({ error: 'You cannot delete this comment as you do not own it or it does not exist' }, { status: 404 });
     }
 
     return NextResponse.json({ message: 'Comment deleted successfully', recipe }, { status: 200 });
