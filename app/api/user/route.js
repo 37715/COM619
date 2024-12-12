@@ -5,7 +5,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route.js";
 import UserRecipes from "@/server/models/UserRecipes.mjs";
 import UserLikes from "@/server/models/UserLikes.mjs";
-import { getToken} from "next-auth/jwt";
+import Recipe from "@/server/models/Recipe.mjs";
+
 export async function GET(req) {
     try {
 
@@ -68,8 +69,8 @@ export async function PATCH(req) {
 
         
         const updatedUserRecipes = await UserRecipes.updateMany(
-            { author: session.user.name }, 
-            { $set: { author: newUsername } } 
+            { username: session.user.name }, 
+            { $set: { username: newUsername } } 
         );
 
         
@@ -78,18 +79,26 @@ export async function PATCH(req) {
             { $set: { username : newUsername } } 
         );       
 
-        
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        token.name = newUsername;
-        await setLoginSession(req, token);
-        
+        const updatedComments = await Recipe.updateMany(
+            { "comments.userName": session.user.name }, 
+            { $set: { "comments.$.userName": newUsername } }
+        );
 
+        const updatedAuthor = await Recipe.updateMany(
+            { "author": session.user.name }, 
+            { $set: { "author": newUsername } }
+        );
+
+        
+        
         return NextResponse.json(
             {
                 message: "Username updated successfully",
                 username: user.username,
                 updatedUserRecipes: updatedUserRecipes.modifiedCount, 
                 updatedUserLikes: updatedUserLikes.modifiedCount, 
+                updatedComments: updatedComments.modifiedCount,
+                updatedAuthor: updatedAuthor.modifiedCount
             },
             { status: 200 }
         );
