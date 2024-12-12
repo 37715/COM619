@@ -127,6 +127,8 @@ export async function DELETE(req, { params }) {
       { new: true }
     );
 
+    console.log(recipe);
+
     if (!recipe) {
       return NextResponse.json({ error: 'You cant Delete this comment as you do not own it.' }, { status: 404 });
     }

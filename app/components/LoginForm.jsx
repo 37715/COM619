@@ -125,6 +125,10 @@ const LoginForm = () => {
           {errorMessage && (
             <div className="text-red-500 text-sm mt-1">{errorMessage}</div>
           )}
+          {welcomeMessage && (
+            <div className="text-green-500 text-sm mt-1">{welcomeMessage}</div>
+          )
+          }
         </div>
       ) : (
         <div className="flex items-center gap-4">
