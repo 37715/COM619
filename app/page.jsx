@@ -227,16 +227,17 @@ const HomePage = () => {
           setCommentError(null);
           setCommentSuccess(data.message);
           setComment('');
+          const newComment = { username: session.user.name, comment: comment };
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name
-                ? { ...recipe, comments: [...recipe.comments, ...data.recipe.comments] }
+                ? { ...recipe, comments: [...recipe.comments, newComment] }
                 : recipe
             )
           );
           setSelectedRecipe((prevRecipe) => ({
             ...prevRecipe,
-            comments: [...prevRecipe.comments, ...data.recipe.comments],
+            comments: [...prevRecipe.comments, newComment],
           }));
           setUpdateCount(updateCount + 1);
           setTimeout(() => {
