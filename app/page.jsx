@@ -1,9 +1,10 @@
-'use client'; // This ensures that the component is treated as a client-side component
+'use client'; 
 import LoginForm from './components/LoginForm';
 import RecipeCardComponent from './components/RecipeCardComponent';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 
 
 
@@ -37,7 +38,9 @@ const HomePage = () => {
         const data = await response.json();
         console.log(data);
         setRecipes(data);
-        setSelectedRecipe(data[0]);
+        if (!selectedRecipe && data.length > 0) {
+          setSelectedRecipe(data[0]);
+        }
       } catch (error) {
         console.error('Error fetching recipes:', error);
       }
@@ -50,7 +53,6 @@ const HomePage = () => {
         console.log(data);
         setUserRecipes(data.recipes);
         console.log(data.recipes);
-        
       } catch (error) {
         console.log('Error fetching user recipes:', error);
       }
@@ -59,6 +61,8 @@ const HomePage = () => {
     fetchRecipes();
     if (session) {
       fetchUserRecipes();
+    } else {
+      setUserRecipes([]);
     }
   }, [session, updateCount]);
 
@@ -105,12 +109,21 @@ const HomePage = () => {
   
           if (userLikesResponse.status === 201) {
             console.log('Recipe liked successfully');
-            setSuccess(userLikesData.message);
-            setError(null);
+            setSuccess('Recipe liked successfully');
+              setError(null);
+            setTimeout(() => {
+              setSuccess(null);
+              setError(null);
+            }, 5000);
+            
           } else {
             console.log('Error liking recipe');
             setSuccess(null);
             setError(userLikesData.error);
+            setTimeout(() => {
+              setSuccess(null);
+              setError(null);
+            }, 5000);
           }
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
@@ -126,6 +139,10 @@ const HomePage = () => {
           console.log('Error updating likes');
           setSuccess(null);
           setError(data.error);
+          setTimeout(() => {
+            setSuccess(null);
+            setError(null);
+          }, 5000);
         }
       }
   
@@ -134,11 +151,19 @@ const HomePage = () => {
         const alreadyLikedData = await alreadyLikedResponse.json();
         console.log('Error fetching likes');
         setError(alreadyLikedData.error);
+        setTimeout(() => {
+          setSuccess(null);
+          setError(null);
+        }, 5000);
       }
     } catch (error) {
       console.log('Error during like process:', error);
       setSuccess(null);
       setError('Error processing like request');
+      setTimeout(() => {
+        setSuccess(null);
+        setError(null);
+      }, 5000);
     }
   };
 
@@ -161,14 +186,26 @@ const HomePage = () => {
           ...prevRecipe,
           likes: data.recipe.likes,
         }));
+        setTimeout(() => {
+          setSuccess(null);
+          setError(null);
+        }, 5000);
       } else {
         setError(data.error);
         setSuccess(null);
+        setTimeout(() => {
+          setSuccess(null);
+          setError(null);
+        }, 5000);
       }
     } catch (error) {
       console.log('Error unliking recipe:', error);
       setError('Error unliking recipe');
       setSuccess(null);
+      setTimeout(() => {
+        setSuccess(null);
+        setError(null);
+      }, 5000);
     }
   };
   
@@ -202,26 +239,46 @@ const HomePage = () => {
             comments: [...prevRecipe.comments, ...data.recipe.comments],
           }));
           setUpdateCount(updateCount + 1);
+          setTimeout(() => {
+            setCommentSuccess(null);
+            setCommentError(null);
+          }, 5000);
           break;
         case 401:
           console.log('Unauthorized');
           setCommentError(data.error);
           setCommentSuccess(null);
+          setTimeout(() => {
+            setCommentSuccess(null);
+            setCommentError(null);
+          }, 5000);
           break;
         case 404:
           console.log('Recipe not found');
           setCommentError(data.error);
           setCommentSuccess(null);
+          setTimeout(() => {
+            setCommentSuccess(null);
+            setCommentError(null);
+          }, 5000);
           break;
         default:
           console.log('Error adding comment');
           setCommentError(data.error);
           setCommentSuccess(null);
+          setTimeout(() => {
+            setCommentSuccess(null);
+            setCommentError(null);
+          }, 5000);
           break;
       }
     } catch (error) {
       console.error('Error adding comment:', error);
       setCommentError('Error adding comment');
+      setTimeout(() => {
+        setCommentSuccess(null);
+        setCommentError(null);
+      }, 5000);
     }
   };
 
@@ -265,22 +322,41 @@ const HomePage = () => {
               : comment
           ),
         }));
+        setTimeout(() => {
+          setEditCommentSuccess(null);
+          setEditCommentError(null);
+        }, 5000);
       } else if (response.status === 400) {
         console.log('Error editing comment:', response);
         setEditCommentError(data.error);
         setEditCommentSuccess('');
+        setTimeout(() => {
+          setEditCommentSuccess(null);
+          setEditCommentError(null);
+        }, 5000);
       } else if (response.status === 403) {
         console.log('Error editing comment:', response);
         setEditCommentError(data.error);
         setEditCommentSuccess('');
+        setTimeout(() => {
+          setEditCommentSuccess(null);
+          setEditCommentError(null);
+        }, 5000);
       }else if (response.status === 404) {
         console.log('Error editing comment:', response);
         setEditCommentError(data.error);
         setEditCommentSuccess('');
+        setTimeout(() => {
+          setEditCommentSuccess(null);
+          setEditCommentError(null);
+        }, 5000);
       } else {
         console.log('Error editing comment:', response);
         setEditCommentError(data.error);
-        setEditCommentSuccess('');
+        setEditCommentSuccess('');setTimeout(() => {
+          setEditCommentSuccess(null);
+          setEditCommentError(null);
+        }, 5000);
       }
     } catch (error) {
       console.log('Error editing comment:', error);
@@ -306,8 +382,8 @@ const HomePage = () => {
             recipe.name === recipeName
               ? {
                   ...recipe,
-                  comments: recipe.comments.filter((comment) =>
-                    comment.comment !== comment
+                  comments: recipe.comments.filter((c) =>
+                    c.comment !== comment
                   ),
                 }
               : recipe
@@ -316,12 +392,13 @@ const HomePage = () => {
 
         setSelectedRecipe((prevRecipe) => ({
           ...prevRecipe,
-          comments: prevRecipe.comments.filter((comment) =>
-            comment.comment !== comment
+          comments: prevRecipe.comments.filter((c) =>
+            c.comment !== comment
           ),
         }));
         setTimeout(() => {
-          setDeleteCommentSuccess('');
+          setDeleteCommentSuccess(null);
+          setDeleteCommentError(null);
         }, 5000);
       } else if (response.status === 400) {
         console.log('Error deleting comment:', response);
@@ -368,6 +445,7 @@ const HomePage = () => {
               type="button"
               value="User Page"
               className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md"
+              id="user-page-button"
             />
           </Link>
         </div>

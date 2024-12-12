@@ -80,7 +80,7 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
         <p className="text-black">{recipe.likes}</p>
         <input type="button"
           value={hasLiked ? "Unlike": "Like"} className={`p-2 px-4 text-xl cursor-pointer ${hasLiked ? "bg-red-500": "bg-blue-500" } bg-blue-500 text-white rounded-md mt-2`}
-          onClick={handleLikeToggle} />
+          onClick={handleLikeToggle}  id={hasLiked ? "Unlike" : "Like"}/>
         <p className="text-red-500">{errorMSG}</p>
         <p className="text-green-500">{successMessage}</p>
         <h4 className="border-b-2 border-gray-500 pb-2 mb-4 text-black my-3">Comments:</h4>
@@ -96,6 +96,7 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
             type="button" 
             value="Add Comment (User)" 
             className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2" 
+            id="add-comment"
             onClick={()=> addComment(recipe.name, currentComment)}
           />
         </div>
@@ -111,8 +112,8 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
             <p className="text-gray-500 text-sm">
               {new Date(comment.date).toLocaleDateString()}
             </p>
-            <input type="button" value="Edit" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => toggleEditComment(comment._id, comment.comment)} />
-            <input type="button" value="Delete" className="p-2 px-4 text-xl cursor-pointer bg-red-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => deleteComment(recipe.name, comment.comment)} />
+            <input type="button" value="Edit" className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => toggleEditComment(comment._id, comment.comment)} id={`editcomment${comment._id}`} />
+            <input type="button" value="Delete" className="p-2 px-4 text-xl cursor-pointer bg-red-500 text-white rounded-md mt-2 mr-2 ml-2" onClick={() => deleteComment(recipe.name, comment.comment)} id={`deletecomment${comment._id}`} />
             {editingCommentId === comment._id && (
               <div className="flex items-center space-x-4">
                 <input 
@@ -126,6 +127,7 @@ const RecipeCardComponent = ({ recipe, onLike, onUnlike,  errorMSG, successMessa
                   type="button" 
                   value="Save" 
                   className="p-2 px-4 text-xl cursor-pointer bg-blue-500 text-white rounded-md mt-2" 
+                  id={`edit-comment-${comment._id}`}
                   onClick={()=> editComment(recipe.name, comment.comment, newCommentValue)}
                 />
                 <p className="text-red-500">{editCommentError}</p>

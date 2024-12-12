@@ -27,6 +27,11 @@ const nextConfig = {
             hostname: 'www.simplyrecipes.com',
             pathname: '/**'
         },
+        {
+          protocol: 'https',
+          hostname: 'encrypted-tbn0.gstatic.com',
+          pathname: '/images**'
+        },
       ],
     },
   };

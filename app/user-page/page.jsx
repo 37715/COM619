@@ -80,6 +80,11 @@ const UserPage = () => {
         setRecipeError('Failed to add recipe');
         setRecipeSuccess(null);
         console.log(userRecipeData.error);
+        setTimeout(() => {
+          setRecipeError(null);
+          setRecipeSuccess(null);
+        }, 3000);
+        return;
       }
       setRecipeError(null);
       console.log('Recipe added:', data);
@@ -95,10 +100,17 @@ const UserPage = () => {
         ...prevUserRecipes, 
         { recipeName: recipeName }  
       ]);
-
-
+      setTimeout(() => {
+        setRecipeError(null);
+        setRecipeSuccess(null);
+      }, 3000);
     } catch (err) {
-      console.error('Error adding recipe:', err);
+      console.log('Error adding recipe:', err);
+      setRecipeError('Failed to add recipe');
+      setTimeout(() => {
+        setRecipeError(null);
+        setRecipeSuccess(null);
+      }, 3000);
     }
   };
 
@@ -117,7 +129,6 @@ const UserPage = () => {
     if (!window.confirm(`Are you sure you want to delete the recipe: ${recipeName}?`)) {
       return; 
     }
-  
     try {
       const response = await fetch(`/api/recipes/${recipeName}/delete`, {
         method: 'DELETE',
@@ -130,13 +141,20 @@ const UserPage = () => {
         setUserRecipes((prevRecipes) =>
           prevRecipes.filter((recipe) => recipe.recipeName !== recipeName)
         );
+
       } else {
         console.error('Error deleting recipe:', data.error);
         setUserRecipeError(data.error || 'Failed to delete recipe.');
+        setTimeout(() => {
+          setUserRecipeError(null);
+        }, 3000);
       }
     } catch (error) {
-      console.error('Error deleting recipe:', error);
+      console.log('Error deleting recipe:', error);
       setUserRecipeError('Error deleting recipe.');
+      setTimeout(() => {
+        setUserRecipeError(null);
+      }, 3000);
     }
   };
 
@@ -155,6 +173,10 @@ const UserPage = () => {
       if (!response.ok) {
         setUsernameError(data.error || 'Failed to update username.');
         setUsernameSuccess(null);
+        setTimeout(() => {
+          setUsernameError(null);
+          setUsernameSuccess(null);
+        }, 3000);
         return;
       }
       alert('Username updated. Please log in with new username');
@@ -163,7 +185,12 @@ const UserPage = () => {
       setUsernameSuccess(data.message);
       console.log('Username updated:', data);
     } catch (err) {
-      console.error('Error updating username:', err);
+      console.log('Error updating username:', err);
+      setUsernameError('Failed to update username.');
+      setTimeout(() => {
+        setUsernameError(null);
+        setUsernameSuccess(null);
+      }, 3000);
     }
   };
   
@@ -261,6 +288,7 @@ const UserPage = () => {
               type="button"
               value="Go to Recipes Page"
               className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded cursor-pointer"
+              id="recipes-btn"
             />
           </Link>
           <input
@@ -284,7 +312,7 @@ const UserPage = () => {
               <div className="username text-lg font-semibold text-black mr-2">{session.user.name}</div>
               <input
                 type="button"
-                value="Change(Note: This feature is not implemented)"
+                value="Change Picture(Note: Not Implemented)"
                 className="change-btn text-sm text-blue-600 hover:underline cursor-pointer"
               />
             </div>
@@ -293,6 +321,7 @@ const UserPage = () => {
               value="Edit Username (Will be logged out and Redirected)"
               className="edit-btn mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full cursor-pointer"
               onClick={() => setIsEditing(!isEditing)}
+              id="edit-username-btn"
             />
             {isEditing && (
               <div className="edit-username-box mt-4">
@@ -308,6 +337,7 @@ const UserPage = () => {
                   value="Save"
                   className="save-btn bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded cursor-pointer mt-2"
                   onClick={changeUsername}
+                  id="save-username-btn"
                 />
               </div>
             )}
@@ -324,7 +354,7 @@ const UserPage = () => {
                 Array.isArray(userRecipes) && userRecipes.map((recipe, index) => (
                   <li className="text-black mb-4 flex items-center justify-between" key={index}>
                     <span>{recipe.recipeName}</span>
-                    <input type="button" value="Delete" className="delete-btn bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded cursor-pointer" onClick={() => handleDeleteRecipe(recipe.recipeName)} />
+                    <input type="button" value="Delete" className="delete-btn bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded cursor-pointer" onClick={() => handleDeleteRecipe(recipe.recipeName)} id={`delete-recipe${recipe.recipeName}`} />
                   </li>
                 ))
               )}
@@ -416,12 +446,14 @@ const UserPage = () => {
               value="Upload"
               className="upload-btn bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded cursor-pointer"
               onClick={addRecipe}
+              id="upload-recipe-btn"
             />
             <input
               type="button"
               value="Clear"
               className="clear-btn bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded cursor-pointer"
               onClick={clearRecipeForm}
+              id="clear-recipe-btn"
             />
             <p className="text-green-500">{recipeSuccess}</p>
             <p className="text-red-500">{recipeError}</p>
