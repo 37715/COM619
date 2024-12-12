@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GitHubProvider from "next-auth/providers/github";
 import connectDB from "@/server/connectDB.mjs";
 import User from "@/server/models/User.mjs";
 
@@ -33,6 +34,10 @@ export const authOptions = {
         
         return { name: user.username};
       },
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
   ],
   callbacks: {
