@@ -227,7 +227,7 @@ const HomePage = () => {
           setCommentError(null);
           setCommentSuccess(data.message);
           setComment('');
-          const newComment = { username: session.user.name, comment: comment };
+          const newComment = { userName: session.user.name, comment: comment, date: new Date().toISOString()  };
           setRecipes((prevRecipes) =>
             prevRecipes.map((recipe) =>
               recipe.name === name
